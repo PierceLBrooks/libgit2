@@ -15,7 +15,9 @@
 #include "win32/findfile.h"
 #else
 #include <unistd.h>
+#if (!defined(_WIN32)) || defined(__CYGWIN__)
 #include <pwd.h>
+#endif
 #endif
 
 static int git_sysdir_guess_programdata_dirs(git_buf *out)

@@ -17,13 +17,19 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+#if (defined(_WIN32)) && !defined(__CYGWIN__)
+typedef SOCKET GIT_SOCKET;
+#else
 typedef int GIT_SOCKET;
-#define INVALID_SOCKET -1
+#endif
+#ifndef INVALID_SOCKET
+# define INVALID_SOCKET -1
+#endif
 
-#define p_lseek(f,n,w) lseek(f, n, w)
-#define p_fstat(f,b) fstat(f, b)
-#define p_lstat(p,b) lstat(p,b)
-#define p_stat(p,b) stat(p, b)
+#define p_lseek(f,n,w) vfspp_lseek(f, n, w)
+#define p_fstat(f,b) vfspp_fstat(f, b)
+#define p_lstat(p,b) vfspp_lstat(p,b)
+#define p_stat(p,b) vfspp_stat(p, b)
 
 #if defined(GIT_USE_STAT_MTIMESPEC)
 # define st_atime_nsec st_atimespec.tv_nsec
@@ -37,19 +43,19 @@ typedef int GIT_SOCKET;
 # error GIT_USE_NSEC defined but unknown struct stat nanosecond type
 #endif
 
-#define p_utimes(f, t) utimes(f, t)
+#define p_utimes(f, t) vfspp_utimes(f, t)
 
-#define p_readlink(a, b, c) readlink(a, b, c)
-#define p_symlink(o,n) symlink(o, n)
-#define p_link(o,n) link(o, n)
-#define p_unlink(p) unlink(p)
-#define p_mkdir(p,m) mkdir(p, m)
+#define p_readlink(a, b, c) vfspp_readlink(a, b, c)
+#define p_symlink(o,n) vfspp_symlink(o, n)
+#define p_link(o,n) vfspp_link(o, n)
+#define p_unlink(p) vfspp_unlink(p)
+#define p_mkdir(p,m) vfspp_mkdir(p, m)
 extern char *p_realpath(const char *, char *);
 
 GIT_INLINE(int) p_fsync(int fd)
 {
 	p_fsync__cnt++;
-	return fsync(fd);
+	return vfspp_fsync(fd);
 }
 
 #define p_recv(s,b,l,f) recv(s,b,l,f)
@@ -60,20 +66,20 @@ GIT_INLINE(int) p_fsync(int fd)
 #define p_strncasecmp(s1, s2, c) strncasecmp(s1, s2, c)
 #define p_vsnprintf(b, c, f, a) vsnprintf(b, c, f, a)
 #define p_snprintf snprintf
-#define p_mkstemp(p) mkstemp(p)
-#define p_chdir(p) chdir(p)
-#define p_chmod(p,m) chmod(p, m)
-#define p_rmdir(p) rmdir(p)
-#define p_access(p,m) access(p,m)
-#define p_ftruncate(fd, sz) ftruncate(fd, sz)
+#define p_mkstemp(p) vfspp_mkstemp(p)
+#define p_chdir(p) vfspp_chdir(p)
+#define p_chmod(p,m) vfspp_chmod(p, m)
+#define p_rmdir(p) vfspp_rmdir(p)
+#define p_access(p,m) vfspp_access(p,m)
+#define p_ftruncate(fd, sz) vfspp_ftruncate(fd, sz)
 
 /* see win32/posix.h for explanation about why this exists */
-#define p_lstat_posixly(p,b) lstat(p,b)
+#define p_lstat_posixly(p,b) vfspp_lstat(p,b)
 
-#define p_localtime_r(c, r) localtime_r(c, r)
-#define p_gmtime_r(c, r) gmtime_r(c, r)
+#define p_localtime_r(c, r) vfspp_localtime_r(c, r)
+#define p_gmtime_r(c, r) vfspp_gmtime_r(c, r)
 
-#define p_timeval timeval
+#define p_timeval vfspp_timeval
 
 #ifdef GIT_USE_FUTIMENS
 GIT_INLINE(int) p_futimes(int f, const struct p_timeval t[2])
@@ -86,7 +92,7 @@ GIT_INLINE(int) p_futimes(int f, const struct p_timeval t[2])
 	return futimens(f, s);
 }
 #else
-# define p_futimes futimes
+# define p_futimes vfspp_futimes
 #endif
 
 #endif

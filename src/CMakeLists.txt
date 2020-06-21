@@ -261,19 +261,8 @@ file(GLOB SRC_H
 list(SORT SRC_H)
 
 # On Windows use specific platform sources
-if(WIN32 AND NOT CYGWIN)
-	if(MSVC)
-		SET(WIN_RC "win32/git2.rc")
-	endif()
-
-	file(GLOB SRC_OS win32/*.c win32/*.h)
-	list(SORT SRC_OS)
-elseif(AMIGA)
-	add_definitions(-DNO_ADDRINFO -DNO_READDIR_R -DNO_MMAP)
-else()
-	file(GLOB SRC_OS unix/*.c unix/*.h)
-	list(SORT SRC_OS)
-endif()
+file(GLOB SRC_OS unix/*.c unix/*.h)
+list(SORT SRC_OS)
 
 IF (USE_LEAK_CHECKER STREQUAL "valgrind")
 	ADD_DEFINITIONS(-DVALGRIND)
@@ -313,6 +302,9 @@ CONFIGURE_FILE(features.h.in git2/sys/features.h)
 
 SET(LIBGIT2_SOURCES ${SRC_H} ${SRC_GIT2} ${SRC_OS} ${SRC_SSH} ${SRC_SHA1})
 
+LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${VFSPP_INCLUDE_DIR})
+LIST(APPEND LIBGIT2_LIBS ${VFSPP_LIBRARIES})
+SET_SOURCE_FILES_PROPERTIES(${LIBGIT2_SOURCES} PROPERTIES LANGUAGE CXX)
 ADD_LIBRARY(git2internal OBJECT ${LIBGIT2_SOURCES})
 SET_TARGET_PROPERTIES(git2internal PROPERTIES C_STANDARD 90)
 IDE_SPLIT_SOURCES(git2internal)

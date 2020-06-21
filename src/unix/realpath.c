@@ -19,15 +19,9 @@
 char *p_realpath(const char *pathname, char *resolved)
 {
 	char *ret;
-	if ((ret = realpath(pathname, resolved)) == NULL)
+	if ((ret = vfspp_realpath(pathname, resolved)) == NULL)
 		return NULL;
 
-#ifdef __OpenBSD__
-	/* The OpenBSD realpath function behaves differently,
-	 * figure out if the file exists */
-	if (access(ret, F_OK) < 0)
-		ret = NULL;
-#endif
 	return ret;
 }
 

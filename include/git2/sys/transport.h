@@ -12,6 +12,8 @@
 #include "git2/types.h"
 #include "git2/strarray.h"
 #include "git2/proxy.h"
+#include "git2/transport.h"
+#include "git2/indexer.h"
 
 /**
  * @file git2/sys/transport.h

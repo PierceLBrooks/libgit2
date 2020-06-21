@@ -117,12 +117,12 @@ int p_open(const char *path, volatile int flags, ...)
 		va_end(arg_list);
 	}
 
-	return open(path, flags | O_BINARY | O_CLOEXEC, mode);
+	return vfspp_open(path, flags | O_BINARY | O_CLOEXEC, mode);
 }
 
 int p_creat(const char *path, mode_t mode)
 {
-	return open(path, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_CLOEXEC, mode);
+	return vfspp_open(path, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_CLOEXEC, mode);
 }
 
 int p_getcwd(char *buffer_out, size_t size)
@@ -131,7 +131,7 @@ int p_getcwd(char *buffer_out, size_t size)
 
 	assert(buffer_out && size > 0);
 
-	cwd_buffer = getcwd(buffer_out, size);
+	cwd_buffer = vfspp_getcwd(buffer_out, size);
 
 	if (cwd_buffer == NULL)
 		return -1;
@@ -144,12 +144,12 @@ int p_getcwd(char *buffer_out, size_t size)
 
 int p_rename(const char *from, const char *to)
 {
-	if (!link(from, to)) {
+	if (!vfspp_link(from, to)) {
 		p_unlink(from);
 		return 0;
 	}
 
-	if (!rename(from, to))
+	if (!vfspp_rename(from, to))
 		return 0;
 
 	return -1;
@@ -162,20 +162,13 @@ ssize_t p_read(git_file fd, void *buf, size_t cnt)
 	char *b = buf;
 
 	if (!git__is_ssizet(cnt)) {
-#ifdef GIT_WIN32
-		SetLastError(ERROR_INVALID_PARAMETER);
-#endif
 		errno = EINVAL;
 		return -1;
 	}
 
 	while (cnt) {
 		ssize_t r;
-#ifdef GIT_WIN32
-		r = read(fd, b, cnt > INT_MAX ? INT_MAX : (unsigned int)cnt);
-#else
-		r = read(fd, b, cnt);
-#endif
+		r = vfspp_read(fd, b, cnt);
 		if (r < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
@@ -195,12 +188,7 @@ int p_write(git_file fd, const void *buf, size_t cnt)
 
 	while (cnt) {
 		ssize_t r;
-#ifdef GIT_WIN32
-		assert((size_t)((unsigned int)cnt) == cnt);
-		r = write(fd, b, (unsigned int)cnt);
-#else
-		r = write(fd, b, cnt);
-#endif
+		r = vfspp_write(fd, b, cnt);
 		if (r < 0) {
 			if (errno == EINTR || GIT_ISBLOCKED(errno))
 				continue;

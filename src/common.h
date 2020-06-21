@@ -71,7 +71,13 @@
 # define st_mtim st_mtimespec
 #endif
 
+#if (defined(_WIN32)) && !defined(__CYGWIN__)
+# include <winsock2.h>
+# include <windows.h>
+# include <ws2tcpip.h>
+#else
 # include <arpa/inet.h>
+#endif
 
 #endif
 

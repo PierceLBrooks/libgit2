@@ -10,6 +10,8 @@
 #include <time.h>
 #include <stdlib.h>
 
+#include <VFS.h>
+
 #ifdef __cplusplus
 # define GIT_BEGIN_DECL extern "C" {
 # define GIT_END_DECL	}
@@ -69,10 +71,6 @@ typedef size_t size_t;
 # define GIT_FORMAT_PRINTF(a,b) __attribute__((format (printf, a, b)))
 #else
 # define GIT_FORMAT_PRINTF(a,b) /* empty */
-#endif
-
-#if (defined(_WIN32)) && !defined(__CYGWIN__)
-#define GIT_WIN32 1
 #endif
 
 #ifdef __amigaos4__
